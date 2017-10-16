@@ -7,17 +7,17 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
-#define PORT 3490
-#define MAXSIZE 10241
+#include "myheader.h"
 
 int main(int argc, char **argv) {
 	struct sockaddr_in server_info;
 	struct hostent *host;
-	int sockfd, num;
+	int sockfd, num, n;
 
 	char buffer[MAXSIZE];
-	char buff[MAXSIZE];
+	char username[MAXSIZE];
+	char password[MAXSIZE];
+	char loggedIn[MAXSIZE];
 
 	if (argc != 3) {
 		printf("Hostname OR Port number missing\n");
@@ -51,30 +51,54 @@ int main(int argc, char **argv) {
 	printf("Welcome to the Online Hangman Gaming System\n\n");
 	printf("============================================\n\n");
 	printf("You are required to logon with your registered Username and Password\n\n");
-
-	while(1) {
-		printf("Client: Enter data for Server:\n");
-		fgets(buffer, MAXSIZE, stdin);
-		
-		if (send(sockfd, buffer, strlen(buffer), 0) < 0) {
-			printf("Sending message error\n");
-			return EXIT_FAILURE;
-
-		} else {
-			printf("Client: message being sent: %s\n", buffer);
-
-			// int num value returns the strings length
-			num = recv(sockfd, buffer, sizeof(buffer), 0);	
-
-			if (num <= 0) {
-				printf("Server terminated OR error\n");
-				break;
-			}
-			
-			buffer[num] = '\0';		
-			printf("Message recieved from server: %s\n", buffer);
-		}
+	printf("Please enter your username--> ");
+	fgets(username, MAXSIZE, stdin);
+	if (send(sockfd, username, strlen(username), 0) < 0) {
+		printf("Sending username error!\n");
+		return EXIT_FAILURE;
 	}
-	close(sockfd);
+	printf("\n");
+	printf("Please enter your password--> ");
+	fgets(password, MAXSIZE, stdin);
+	if (send(sockfd, password, strlen(password), 0) < 0) {
+		printf("Sending password error!\n");
+		return EXIT_FAILURE;
+	}
+	printf("\n");	
+
+	n = recv(sockfd, loggedIn, sizeof(loggedIn), 0);
+	loggedIn[n] = '\0';
+
+	if (strcmp(loggedIn, "no") == 0) {
+		printf("You entered either an incorrect username or a password - disconnecting\n");
+		close(sockfd);
+
+	} else if (strcmp(loggedIn, "yes") == 0) {
+		clientMenu();
+		while(1) {
+			int option;
+			scanf("%d", &option);
+
+			switch(option) {
+				case 1:
+					printf("You pressed number 1\n");
+					break;
+				case 2:
+					printf("You pressed number 2\n");
+					break;
+
+				case 3:
+					printf("You pressed number 3\n");
+					break;
+			}
+		}
+		close(sockfd);
+	}
+	
 	return 0;
 }
+
+
+
+
+
