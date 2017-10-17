@@ -69,29 +69,13 @@ int main(int argc, char **argv) {
 	n = recv(sockfd, loggedIn, sizeof(loggedIn), 0);
 	loggedIn[n] = '\0';
 
+	
 	if (strcmp(loggedIn, "no") == 0) {
 		printf("You entered either an incorrect username or a password - disconnecting\n");
 		close(sockfd);
 
 	} else if (strcmp(loggedIn, "yes") == 0) {
-		clientMenu();
-		while(1) {
-			int option;
-			scanf("%d", &option);
-
-			switch(option) {
-				case 1:
-					printf("You pressed number 1\n");
-					break;
-				case 2:
-					printf("You pressed number 2\n");
-					break;
-
-				case 3:
-					printf("You pressed number 3\n");
-					break;
-			}
-		}
+		clientMenu(sockfd);
 		close(sockfd);
 	}
 	

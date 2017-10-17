@@ -125,6 +125,9 @@ int main(int argc, char *argv[]) {
 				}
 			
 				printf("Server: msg %s\nNumber of bytes: %d\n", buffer, strlen(buffer));
+				if (buffer == "2"){
+					leaderboard(*users, sockfd);
+				}
 			}
 			close(newsockfd);
 		}

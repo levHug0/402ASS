@@ -26,4 +26,10 @@ void userCreator(person *arr);
 
 void clientMenu();
 
+int cmp_gamesWon(const void *a, const void *b);
+
+int cmp_percentage(const void *a, const void *b);
+
+void leaderboard();
+
 #endif
