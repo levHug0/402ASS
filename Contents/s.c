@@ -123,11 +123,12 @@ int main(int argc, char *argv[]) {
 					close(newsockfd);
 					break;
 				}
+				if (strcmp(buffer, "2") == 0){
+					printf("\n\nleaderboard...\n\n");
+					leaderboard(users, sockfd);
+				}
 			
 				printf("Server: msg %s\nNumber of bytes: %d\n", buffer, strlen(buffer));
-				if (buffer == "2"){
-					leaderboard(*users, sockfd);
-				}
 			}
 			close(newsockfd);
 		}
@@ -147,5 +148,8 @@ void signalHandler(int signal) {
 	}
 	return;
 };
+
+
+
 
 

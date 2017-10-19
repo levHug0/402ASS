@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
 
 int randomNumber() {
 	return rand() % 289;
@@ -49,7 +52,6 @@ void userCreator(person *arr) {
 
 
 void clientMenu(int sockfd) {
-	printf("Welcome to the Hangman Gaming System\n\n\n");
 	printf("Please enter a selection\n");
 	printf("<1> Play Hangman\n");
 	printf("<2> Show Leaderboard\n");
@@ -67,9 +69,15 @@ void clientMenu(int sockfd) {
 				printf("You pressed number 2\n");
 
 				char two[sizeof(char)] = "2";
-				if (send(sockfd, two, sizeof(char), 0) < 0) {
-					printf("Sending password error!\n");
-					return EXIT_FAILURE;
+				send(sockfd, two, sizeof(char), 0);
+				while(1){
+					printf("showleaderboard\n");
+					int num;
+					char showleaderboard[MAXSIZE];
+					num = recv(sockfd, showleaderboard, sizeof(showleaderboard), 0);
+					showleaderboard[num] = '\0';
+					printf("%s\nend showleaderboard\n", showleaderboard);
+					clientMenu(sockfd);
 				}
 
 				break;
@@ -86,6 +94,7 @@ void clientMenu(int sockfd) {
 	return;
 };
 
+
 // comparison function for ascending games won
 int cmp_gamesWon(const void *a, const void *b){
 	person *playerA = (person *)a;
@@ -101,26 +110,27 @@ int cmp_percentage(const void *a, const void *b){
 }
 
 void leaderboard(person *users, int sockfd) {
+	printf("\n\nleaderboard()\n\n");
 	person *withGamesPlayed = malloc(USERSIZE * sizeof(person));
 	int j = 0;
-	for (int i; i < USERSIZE; i++){
+	for (int i = 0; i < USERSIZE; i++){
 		if (users[i].gamesPlayed > 0){
 			withGamesPlayed[j] = users[i];
 			j++;
 		}
 		// if no users have played a game
 		if (j == 0){
-			printf("=============================================================================\n\n");
-			printf("There is no information currently stored in the Leader Board. Try again later\n\n");
-			printf("=============================================================================\n\n\n\n");
-			clientMenu(sockfd);
+			char noleaderboard[MAXSIZE] = "=============================================================================\\n\\n\
+			There is no information currently stored in the Leader Board. Try again later\\n\\n\
+			=============================================================================\\n\\n\\n\\n";
+			send(sockfd, noleaderboard, strlen(noleaderboard), 0);
 		}
 	}
-	// sort array ascending gamesWon
+	//sort array ascending gamesWon
 	//qsort(withGamesPlayed, j, sizeof(person), cmp_gamesWon);
-	// sort array ascending gamesWon / gamesPlayed
+	//sort array ascending gamesWon / gamesPlayed
 	//qsort(withgamesPlayed, j, sizeof(person), cmp_percentage);
-	// sort array by username
+	//sort array by username
 	for (int k = 0; k < j; k++){
 		printf("========================================\n\n");
 		printf("Player  - %s\n", withGamesPlayed[k].username);

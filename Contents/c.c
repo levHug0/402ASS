@@ -75,12 +75,15 @@ int main(int argc, char **argv) {
 		close(sockfd);
 
 	} else if (strcmp(loggedIn, "yes") == 0) {
+		printf("Welcome to the Hangman Gaming System\n\n\n");
 		clientMenu(sockfd);
+		n = recv(sockfd, loggedIn, sizeof(loggedIn), 0);
 		close(sockfd);
 	}
 	
 	return 0;
 }
+
 
 
 
