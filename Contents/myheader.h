@@ -26,4 +26,8 @@ void userCreator(person *arr);
 
 void clientMenu();
 
+void playHangman(int sock_id, hangmanWord *arr, char *user, person *people);
+
+int guesses(int a, int b);
+
 #endif

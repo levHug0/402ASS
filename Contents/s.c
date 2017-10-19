@@ -11,13 +11,14 @@
 #include <time.h>
 #include "myheader.h"
 
-sig_atomic_t volatile running = 1;
+/*	THIS IS THE SERVER	*/
 
+
+sig_atomic_t volatile running = 1;
 void signalHandler(int signal);
 
 int main(int argc, char *argv[]) {
 	srand(time(NULL));
-
 	/*	Signal handler Ctrl + C	*/
 	struct sigaction handler;
 	handler.sa_handler = signalHandler;
@@ -30,12 +31,8 @@ int main(int argc, char *argv[]) {
 	userCreator(users);
 	wordCreator(words);
 
-	/**************************************************************/
-	/******			Socket	Below			*******/
-	/**************************************************************/
-
 	struct sockaddr_in server, destination;
-	int status, sockfd, newsockfd, num, port, yes = 1;
+	int sockfd, newsockfd, num, port, yes = 1;
 	socklen_t size;
 	char buffer[MAXSIZE];
 
@@ -75,6 +72,7 @@ int main(int argc, char *argv[]) {
 
 		printf("\nVerifying a client: %s\n\n", inet_ntoa(destination.sin_addr));
 		char usr[MAXSIZE], pass[MAXSIZE];
+		char *userLoggedIn;
 		int a,b, correct = 0;
 
 		a = recv(newsockfd, usr, MAXSIZE, 0);
@@ -89,6 +87,7 @@ int main(int argc, char *argv[]) {
 			if (memcmp(usr, users[i].username, strlen(users[i].username)) == 0) {
 				if (memcmp(pass, users[i].password, 6) == 0) {
 					printf("%sLogged in successfully\n\n", usr);
+					userLoggedIn = users[i].username;
 					correct = 1;
 				} 
 			}
@@ -103,35 +102,40 @@ int main(int argc, char *argv[]) {
 		} else if (correct == 1) {
 			correct = 0;
 			char approve[MAXSIZE] = "yes";
-			send(newsockfd, approve, strlen(approve), 0);
-
-			while(running == 1) {
-				if ((num = recv(newsockfd, buffer, MAXSIZE, 0)) < 0) {
-					printf("Server Disconnected OR recv error\n");
-					continue;
-
-				} else if (num == 0) {
-					printf("Connection %s closed\n", inet_ntoa(destination.sin_addr));
-					break;
-				}
-
-				buffer[num] = '\0';
-				printf("\nServer recieved message: %s\n", buffer);
-
-				if ((send(newsockfd, buffer, strlen(buffer), 0)) < 0) {
-					printf("Sending message back to client error\n");
-					close(newsockfd);
-					break;
-				}
 			
-				printf("Server: msg %s\nNumber of bytes: %d\n", buffer, strlen(buffer));
-			}
+			/*	Sends 'yes' to accept the user	*/
+			send(newsockfd, approve, strlen(approve), 0);
+		
+			while(running == 1) {
+				int ans;
+				uint16_t myans;
+				
+				/*	Recieve Number of 1, 2 or 3	*/
+				if ((recv(newsockfd, &myans, sizeof(uint16_t), 0)) <= 0) {
+					printf("Client disconnected\n");
+					break;
+				}
+
+				ans = ntohs(myans);
+
+				/*	If '1' play hangman, If '2' show leaderboard	*/
+				if (ans == 1) {
+					printf("%s is playing Hangman\n", userLoggedIn);
+					playHangman(newsockfd, words, userLoggedIn, users);
+					printf("Game is finished\n");
+					printf("%s - Games played: %d | Games won: %d\n", userLoggedIn, users[0].gamesPlayed, users[0].gamesWon);
+
+				} else if (ans == 2) {
+					printf("You typed 2\n");
+				}
+
+			} // END of while (running == 1)
 			close(newsockfd);
 		}
 	}
+
 	free(users);
 	free(words);
-	close(newsockfd);
 	close(sockfd);
 	printf("Server disconnected...\n");
 	return 0;
@@ -144,5 +148,4 @@ void signalHandler(int signal) {
 	}
 	return;
 };
-
 
