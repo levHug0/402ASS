@@ -75,7 +75,7 @@ void createLeaderboard(leaderboard *arr) {
 
 
 void clientMenu() {
-	printf("Welcome to the Hangman Gaming System\n\n\n");
+	printf("\n\nWelcome to the Hangman Gaming System\n\n\n");
 	printf("Please enter a selection\n");
 	printf("<1> Play Hangman\n");
 	printf("<2> Show Leaderboard\n");
@@ -262,6 +262,99 @@ void playHangman(int sock_id, hangmanWord *arr, char *user, person *people) {
 	}
 };
 
+
+void sendLeaderboard(int sock_id, person *people) {
+	int totalGames = 0;
+	uint16_t tg;
+
+	for (int i = 0; i < USERSIZE; i++) {
+		if (people[i].gamesPlayed > 0) {
+			totalGames++;
+		}
+	}
+
+	tg = htons(totalGames);
+
+	/*	Send the length	*/
+	send(sock_id, &tg, sizeof(uint16_t), 0);
+
+	/*	Send the user with games played and the name	*/
+	if (totalGames > 0) {
+		for (int i = 0; i < USERSIZE; i++) {
+			if (people[i].gamesPlayed > 0) {
+				/*	First send the index of the person	*/
+				
+				uint16_t num;
+				num = htons(people[i].gamesPlayed);
+
+				// Games played
+				send(sock_id, &num, sizeof(uint16_t), 0);
+
+				num = htons(people[i].gamesWon);
+					
+				// games lost
+				send(sock_id, &num, sizeof(uint16_t), 0);
+
+				num = htons(i);
+
+				// Index
+				send(sock_id, &num, sizeof(uint16_t), 0);
+			}
+		}
+	}
+	return;
+};
+
+
+int cmp_gamesWon(const void *a, const void *b) {
+	leaderboard *playerA = (leaderboard *) a;
+	leaderboard *playerB = (leaderboard *) b;
+
+	return (playerB->won - playerA->won);
+};
+
+int cmp_percentage(const void *a, const void *b) {
+	leaderboard *playerA = (leaderboard *)a;
+	leaderboard *playerB = (leaderboard *)b;
+
+	return(playerB->won/playerB->played - playerA->won/playerA->played);
+};
+
+int cmp_names(const void *a, const void *b) {
+	leaderboard *playerA = (leaderboard *)a;
+	leaderboard *playerB = (leaderboard *)b;
+
+	return strcmp(playerA->player,playerB->player);
+};
+
+
+void showLeaderboard(leaderboard *arr, int length) {
+	leaderboard *withGamesPlayed = malloc(USERSIZE * sizeof(leaderboard));
+
+	char *t;
+	int j = 0, k;
+
+	for (int i = 0; i < USERSIZE; i++) {
+		if (arr[i].played > 0) {
+			withGamesPlayed[j] = arr[i];
+			j++;
+		}
+	}
+
+	qsort(withGamesPlayed, j, sizeof(leaderboard), cmp_names);
+	qsort(withGamesPlayed, j, sizeof(leaderboard), cmp_percentage);
+	qsort(withGamesPlayed, j, sizeof(leaderboard), cmp_gamesWon);
+
+
+	for (int k = j - 1; k >= 0; k--) {
+		printf("\n======================================\n\n");
+		printf("Player - %s\n", withGamesPlayed[k].player);
+		printf("Number of games won - %d\n", withGamesPlayed[k].won);
+		printf("Number of games played - %d\n", withGamesPlayed[k].played);
+		printf("\n======================================\n\n");
+	}
+	free(withGamesPlayed);
+};
 
 
 int guesses(int a, int b) {

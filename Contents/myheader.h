@@ -29,6 +29,7 @@ typedef struct {
 
 int randomNumber();
 
+
 void wordCreator(hangmanWord *arr);
 
 void userCreator(person *arr);
@@ -38,6 +39,14 @@ void createLeaderboard(leaderboard *arr);
 void clientMenu();	// Prints client menu
 
 void playHangman(int sock_id, hangmanWord *arr, char *user, person *people);
+
+void sendLeaderboard(int sock_id, person *people);
+
+void showLeaderboard(leaderboard *arr, int length);
+
+int cmp_gamesWon(const void *a, const void *b);
+
+int cmp_percentage(const void *a, const void *b);
 
 int guesses(int a, int b);
 

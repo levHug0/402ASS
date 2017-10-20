@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 			scanf("%d", &ans);
 			myans = htons(ans);
 			printf("\n\n");
-		
+
 			/*	Sends the typed number to server for processing	*/
 			if((send(sockfd, &myans, sizeof(uint16_t), 0)) < 0) {
 				printf("Server disconnected\n");
@@ -222,7 +222,9 @@ int main(int argc, char **argv) {
 				}// END of while
 
 				if (lives == 1) {
-					printf("\n    You have run out of guesses. You Lost! The Hangman got you..\n");
+					printf("\n\n||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||\n");
+					printf("\n You have run out of guesses. You Lost! The Hangman got you..\n\n");
+					printf("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||\n\n");
 
 				} else if (lives > 1) {
 					printf("\n\n|	***	***	***	***	***	***	***	|");
@@ -241,9 +243,53 @@ int main(int argc, char **argv) {
 				uint16_t recvlen;
 		
 				/*	Recieve length	*/
-				//if ((recv(sockfd, &recvlen, ))) {
+				if ((recv(sockfd, &recvlen, sizeof(uint16_t), 0)) <= 0) {
+					printf("Server disconnected OR len of leaderboard\n\n");
+					break;
+				}
 
-				//}	
+				length = ntohs(recvlen);
+
+				if (length > 0) {
+					/*	Recieve	*/
+					for(int i = 0; i < length; i++) {
+						int n, gamesPlayed, gamesWon, index;
+						uint16_t gPlayed, gWon, ind;
+
+						/*	Recieve the games played	*/
+						if((n = recv(sockfd, &gPlayed, sizeof(uint16_t), 0)) <= 0) {
+							printf("Server disconnected OR recv games played error\n");
+							break;
+						}
+
+						gamesPlayed = ntohs(gPlayed);
+
+						if((n = recv(sockfd, &gWon, sizeof(uint16_t), 0)) <= 0) {
+							printf("Server disconnected OR recv games won error\n");
+							break;
+						}
+
+						gamesWon = ntohs(gWon);
+
+						if ((n = recv(sockfd, &ind, sizeof(uint16_t), 0)) <= 0) {
+							printf("Server disconnected OR recv games won error\n");
+							break;
+						}
+
+						index = ntohs(ind);				
+
+						leaders[index].won = gamesWon;
+						leaders[index].played = gamesPlayed;
+							
+					}
+
+					showLeaderboard(leaders, length);
+
+				} else {
+					printf("\n\n===============================================================");
+					printf("\n\n  There are 0 information in the leaderboard. Try again later.");
+					printf("\n\n===============================================================");
+				}
 
 			} else if (ans == 3) {
 				break;

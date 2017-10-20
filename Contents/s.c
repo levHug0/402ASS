@@ -164,7 +164,7 @@ void handle_request(struct request* a_request, int thread_id) {
 					printf("%s finished Playing Hangman\n", userLoggedIn);
 					
 				} else if (ans == 2) {
-					
+					sendLeaderboard(sockfdlist[index], users);
 				}
 
 			} // END of while (running == 1)
