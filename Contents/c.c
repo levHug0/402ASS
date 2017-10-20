@@ -15,6 +15,9 @@ int main(int argc, char **argv) {
 	struct hostent *host;
 	int sockfd, num, n;
 
+	leaderboard *leaders = malloc(USERSIZE * sizeof(leaderboard));
+	createLeaderboard(leaders);
+
 	char buffer[MAXSIZE];
 	char username[MAXSIZE];
 	char password[MAXSIZE];
@@ -141,7 +144,7 @@ int main(int argc, char **argv) {
 					for (int i = 0; i < strlen(type); i++) {
 						printf("%c ", type[i]);
 					}
-					printf(" ");
+					printf("   ");
 
 					for (int i = 0; i < strlen(object); i++) {
 						printf("%c ", object[i]);
@@ -227,8 +230,20 @@ int main(int argc, char **argv) {
 					printf("|	***	***	***	***	***	***	***	|\n\n");
 				}
 
+			/*	If '2' is pressed, show leaderboard	*/
 			} else if (ans == 2) {
-				printf("You pressed 2\n");
+				/*	Length will store how many times the client will recieve a user.
+					For example - the client recieves '3', that means there are
+					3 users that have played the game. SO client can store it to show
+					the leaderboard. 
+								*/
+				int length;
+				uint16_t recvlen;
+		
+				/*	Recieve length	*/
+				//if ((recv(sockfd, &recvlen, ))) {
+
+				//}	
 
 			} else if (ans == 3) {
 				break;
@@ -237,6 +252,7 @@ int main(int argc, char **argv) {
 		}// END of while
 		close(sockfd);
 	}
+	free(leaders);
 	printf("Disconnected\n");
 	return 0;
 }

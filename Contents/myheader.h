@@ -18,13 +18,24 @@ typedef struct {
 
 }hangmanWord;
 
+
+/*	This will be used by the client to view the leaderboard	*/
+typedef struct {
+	char *player;
+	int won;
+	int played;
+
+}leaderboard;
+
 int randomNumber();
 
 void wordCreator(hangmanWord *arr);
 
 void userCreator(person *arr);
 
-void clientMenu();
+void createLeaderboard(leaderboard *arr);
+
+void clientMenu();	// Prints client menu
 
 void playHangman(int sock_id, hangmanWord *arr, char *user, person *people);
 

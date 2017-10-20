@@ -52,6 +52,27 @@ void userCreator(person *arr) {
 	return;
 };
 
+void createLeaderboard(leaderboard *arr) {
+	FILE *file = fopen("Authentication.txt", "r");
+	char str[MAXSIZE];
+	int lines = 0, index = 0;
+
+	while(fgets(str, MAXSIZE, file)) {
+		lines++;
+
+		if(lines > 1) {
+			char *dup = strdup(str);
+			char *token = strtok(dup, " '\t''\n'");
+			arr[index].player = token;
+			arr[index].won = 0;
+			arr[index].played = 0;
+			index++;
+		}
+	}
+	fclose(file);
+	return;
+};
+
 
 void clientMenu() {
 	printf("Welcome to the Hangman Gaming System\n\n\n");
@@ -68,7 +89,7 @@ void playHangman(int sock_id, hangmanWord *arr, char *user, person *people) {
 	char type[MAXSIZE], object[MAXSIZE], fromuser[MAXSIZE], checker[MAXSIZE], checker2[MAXSIZE];
 	char right[MAXSIZE] = "right", wrong[MAXSIZE] = "wrong", winner[MAXSIZE] = "win", loser[MAXSIZE] = "lose";
 
-	int r = randomNumber(), tlen, olen, lives, found, position, position2, win, win2, z;
+	int r = randomNumber(), tlen, olen, lives, found, position, position2, win, win2, z, both = 0, both2 = 0;
 	uint16_t sendLives;
 	
 	tlen = strlen(arr[r].type);
@@ -154,7 +175,10 @@ void playHangman(int sock_id, hangmanWord *arr, char *user, person *people) {
 
 						checker[position] = fromuser[0];
 						checker[tlen] = '\0';
-						win = strcmp(arrtype, checker);			
+						//win = strcmp(arrtype, checker);	
+						win = memcmp(checker, arrtype, strlen(arrtype));
+
+						both = 1;		
 
 					}
 				} // END of if (found == 1)
@@ -185,15 +209,17 @@ void playHangman(int sock_id, hangmanWord *arr, char *user, person *people) {
 
 						checker2[position2] = fromuser[0];
 						checker2[olen] = '\0';
-						win2 = strcmp(arrobj, checker2);
+						//win2 = strcmp(arrobj, checker2);
+						win2 = memcmp(checker2, arrobj, strlen(arrobj));
+
+						both2 = 1;
 
 					}
 				}
 
 			}
 
-
-			if (win == 0 && win2 == 0) {
+			if ((win == 0 && win2 == 0) && (both == 1 && both2 == 1)) {
 
 				for (int i = 0; i < 10;i ++) {
 					if (strcmp(people[i].username, user) == 0) {
@@ -223,9 +249,9 @@ void playHangman(int sock_id, hangmanWord *arr, char *user, person *people) {
 
 	if (lives == 0) {
 		send(sock_id, loser, strlen(loser), 0);
-	} 
-	
-	send(sock_id, winner, strlen(winner), 0);
+	} else {
+		send(sock_id, winner, strlen(winner), 0);
+	}
 
 	/*	Increment games played	*/
 	for (int i = 0; i < 10; i++) {
